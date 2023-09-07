@@ -53,5 +53,3 @@ def create_zombie(screen, zombies):
 		# Create object Zombie
 		zombie = Zombie(screen, pos_x, pos_y)
 		zombies.add(zombie)
-
-	print(zombies)

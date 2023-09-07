@@ -34,4 +34,4 @@ def View(pygame, screen):
 				pygame.quit()
 
 		ctrl.updates(pygame, screen, pochito, zombies)
-		zombies.update()
+		zombies.update([pochito.x, pochito.y])
