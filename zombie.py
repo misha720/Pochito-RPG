@@ -1,4 +1,5 @@
 import pygame
+import random
 
 class Zombie(pygame.sprite.Sprite):
 	'''Класс Zombie'''
@@ -63,11 +64,16 @@ class Zombie(pygame.sprite.Sprite):
 		self.rect.x = x
 		self.rect.y = y
 		
-		self.speed = 0.75
 		self.x = float(self.rect.x)
 		self.y = float(self.rect.y)
 
-	def update(self, pochito_pos):
+		# Zombie Varaible
+		self.health = 100
+		self.attak = 0.05
+		self.speed = 0.75
+		self.direction_slop = random.choice([-1,0,1]) # Направление куда будет постоянно уклоняться зомби
+
+	def update(self, pochito_pos, pochito_check_attak):
 		
 		if self.image_anim_count < len(self.move_right) - 1:
 			self.image_anim_count += 1
@@ -77,22 +83,46 @@ class Zombie(pygame.sprite.Sprite):
 		self.image = self.move_right[self.image_anim_count]
 
 		# Moved
-		if self.rect.x > pochito_pos[0]:
-			# Зомби с права
-			self.x -= 1 * self.speed
+		if self.rect.bottom < self.screen_rect.bottom:
+			if self.rect.top > self.screen_rect.top + 200:
+				if pochito_check_attak: 
+					# Если Почито сейчас атакует то нужно всех зомби убрать с его пути
 
+					# Проверяем, может ли нас атаковать Почито
+					# Уходим только из под удара
+
+					self.y += self.direction_slop * self.speed
+					if self.rect.x > pochito_pos[0]:
+						# Зомби с права
+						self.x -= 1 * self.speed
+
+					else:
+						# Зомби с лева
+						self.x += 1 * self.speed
+				else:
+				
+					if self.rect.x > pochito_pos[0]:
+						# Зомби с права
+						self.x -= 1 * self.speed
+
+					else:
+						# Зомби с лева
+						self.x += 1 * self.speed
+
+					if self.rect.y > pochito_pos[1]:
+						# Зомби выше
+						self.y -= 1 * self.speed
+
+					else:
+						# Зомби ниже
+						self.y += 1 * self.speed
+							
+			else:
+				self.x += 0
+				self.y += 5
 		else:
-			# Зомби с лева
-			self.x += 1 * self.speed
-
-		if self.rect.y > pochito_pos[1]:
-			# Зомби выше
-			self.y -= 1 * self.speed
-
-		else:
-			# Зомби ниже
-			self.y += 1 * self.speed
-		
+			self.x += 0
+			self.y -= 5
 
 		self.rect.x = self.x 
 		self.rect.y = self.y
