@@ -1,36 +1,38 @@
 """
 	Игровой движок
 """
+import time
+
 import controll as ctrl
 from pochito import Pochito
 from ui import UI
-
-WIDTH = 900
-HEIGHT = 500
-
 
 def View(pygame, screen):
     """
 		Карта с играми
 	"""
-    FPS = 60
+    FPS = 30
     clock = pygame.time.Clock()
+    WIDTH = screen.get_rect().width
+    HEIGHT = screen.get_rect().height
 
     pygame.font.init()
-    font_family = pygame.font.match_font("ubuntu")
+    
 
     ui_ctrl = UI(screen)
-    pochito = Pochito(screen, WIDTH // 2 - 150, HEIGHT // 2 + 50)
+    pochito = Pochito(screen, WIDTH // 2, HEIGHT // 2)
     zombies = pygame.sprite.Group()
+    bloods = pygame.sprite.Group()
 
     ctrl.create_zombie(screen, zombies, 5)
 
-    pygame.mixer.init()
-    pygame.mixer.music.load('sound/fight.mp3')
-    pygame.mixer.music.set_volume(1)
-    pygame.mixer.music.play(0)
+    # pygame.mixer.init()
+    # pygame.mixer.music.load('sound/fight.mp3')
+    # pygame.mixer.music.set_volume(1)
+    # pygame.mixer.music.play(-1)
 
-    level_control = 0
+    round_timer = time.time()
+    round_game = 0 # Какой раунд сейчас в игре
 
     #	LOOP
     game = True
@@ -42,24 +44,15 @@ def View(pygame, screen):
                 game = False
                 pygame.quit()
 
-        if level_control == 0:  # OnGame
-            if pochito.health >= 1:
+        second_round = time.time() - round_timer # Секунд прошло с начала игры
 
-                ctrl.controll(pygame, screen, pochito, zombies, ui_ctrl)
-                ctrl.updates(pygame, screen, pochito, zombies, ui_ctrl)
-                zombies.update([pochito.x, pochito.y], pochito.check_attak)
-            else:
-                level_control = 2
+        if second_round >= 60:
+            ctrl.create_zombie(screen, zombies, 5)
+            round_timer = time.time()
+            round_game += 1
 
-        elif level_control == 2:  # OnDie
-            pygame.mixer.music.set_volume(0.2)
-            screen.blit(pygame.image.load("src/bg.png"), (0, 0))  # Установка заднего фона
+        ctrl.controll(pygame, screen, pochito, zombies, ui_ctrl, bloods)
+        ctrl.updates(pygame, screen, pochito, zombies, ui_ctrl, bloods)
+        zombies.update([pochito.x, pochito.y], pochito.check_attak)
 
-            Font = pygame.font.Font(font_family, 50)
-            Font2 = pygame.font.Font(font_family, 40)
-            text = Font.render("You Die", 1, (255, 0, 0))
-            text_count = Font2.render("Count - " + str(pochito.kills_count), 1, (255, 0, 0))
-            screen.blit(text, (WIDTH // 2 - text.get_width(), HEIGHT // 2 - text.get_height() - text_count.get_height() - 20))
-            screen.blit(text_count, ( WIDTH // 2 - text_count.get_width(), HEIGHT // 2 - text_count.get_height()))
-
-            pygame.display.flip()
+            

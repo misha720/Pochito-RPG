@@ -10,26 +10,40 @@ class Pochito(pygame.sprite.Sprite):
         super(Pochito, self).__init__()
         self.screen = screen
         self.screen_rect = self.screen.get_rect()  # Получаем границы экрана
+        self.screen_width = self.screen_rect.width
+        self.screen_height = self.screen_rect.height
 
         self.move_right = [
-            pygame.image.load('src/pochito_right1.png'),
-            pygame.image.load('src/pochito_right2.png'),
-            pygame.image.load('src/pochito_right3.png'),
-            pygame.image.load('src/pochito_right4.png'),
-            pygame.image.load('src/pochito_right5.png'),
-            pygame.image.load('src/pochito_right6.png'),
-            pygame.image.load('src/pochito_right7.png'),
-            pygame.image.load('src/pochito_right8.png'),
-            pygame.image.load('src/pochito_right9.png'),
-            pygame.image.load('src/pochito_right10.png'),
-            pygame.image.load('src/pochito_right11.png')
+            pygame.transform.scale(pygame.image.load('src/pochito_right1.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right2.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right3.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right4.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right5.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right6.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right7.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right8.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right9.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right10.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_right11.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10))
         ]
         self.move_right_attak = [
-            pygame.image.load('src/pochito_attak_right1.png'),
-            pygame.image.load('src/pochito_attak_right2.png')
+        	pygame.transform.scale(pygame.image.load('src/pochito_attak_right1.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
+            pygame.transform.scale(pygame.image.load('src/pochito_attak_right2.png').convert_alpha(), 
+                (self.screen_width // 100 * 10, self.screen_width // 100 * 10))
         ]
         self.image_anim_count = 0
-        self.direction = "right"
 
         self.image = self.move_right[0]
 
@@ -43,7 +57,8 @@ class Pochito(pygame.sprite.Sprite):
         # Переменные персонажа
         self.health = 100  # Здоровье
         self.attak = 1  # Сила
-        self.speed = 5  # Скорость
+        self.speed = 10  # Скорость
+        self.direction = "right"
         self.check_attak = False  # Атакует ли Почито
         self.kills_count = 0  # Счётчик убийств
 
@@ -71,7 +86,7 @@ class Pochito(pygame.sprite.Sprite):
             self.direction = direction
 
             if self.rect.bottom < self.screen_rect.bottom:
-                if self.rect.top > self.screen_rect.top + 200:
+                if self.rect.top > self.screen_height // 100 * 50:
                     if self.rect.right < self.screen_rect.right:
                         if self.rect.left > self.screen_rect.left:
 

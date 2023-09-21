@@ -1,142 +1,226 @@
 import random
+import time
 
 from zombie import Zombie
+from blood import Blood
 
 
-def updates(pygame, screen, pochito, zombies, ui):
-    # UI
-    ui.drawing(pochito.health)
+def updates(pygame, screen, pochito, zombies, ui, bloods):
+    font_family = pygame.font.match_font("ubuntu")
+    WIDTH = screen.get_rect().width
+    HEIGHT = screen.get_rect().height
+    
+    if pochito.health >= 1:
+        # On Live
+        
+        # UI
+        ui.drawing(pochito.health)
 
-    # GAME
-    pochito.drawing()
+        # GAME
 
-    # Проверка жизней каждого Зомби
-    for zombie in zombies.sprites():
-        if zombie.health <= 0:
-            if pochito.health <= 100:  # Ограничение, что бы здоровья всегда было мало
-                pochito.health += 50
+        # Проверка жизней каждого Зомби
+        for zombie in zombies.sprites():
+            if zombie.health <= 0:
 
-            # Восстанавливаем зомби
-            zombie.health = 100
-            zombie.attak += 0.1
-            zombie.direction_slop = random.choice([-1, 0, 1])
-            pochito.kills_count += 1
+                # Зомби умирает
 
-            random_pos_x = [random.randint(-200, -100), random.randint(900, 1000)]
-            zombie.x = random_pos_x[random.randint(0, 1)]
-            zombie.y = random.randint(200, 400)
+                # Получаем позицию мёртвого зомби и устанавливаем там кровь
+                blood = Blood(screen, zombie.rect.x, zombie.rect.y + 80, time.time())
+                bloods.add(blood)
 
-        # Атака зомби в случае соприкосновения с игроком
-        if pochito.rect.colliderect(zombie.rect):
-            pochito.health -= zombie.attak
+                if pochito.health <= 100:  # Ограничение, что бы здоровья всегда было мало
+                    pochito.health += 10
 
-    zombies.draw(screen)
+                # Восстанавливаем зомби
+                zombie.health = 100
+                zombie.direction_slop = random.choice([-1, 0, 1])
+                pochito.kills_count += 1
 
-    pygame.display.flip()
+                random_pos_x = [random.randint(-screen.get_rect().width // 100 * 10, 0), 
+                    random.randint(screen.get_rect().width, screen.get_rect().width + screen.get_rect().width // 100 * 10)]
+                zombie.x = random_pos_x[random.randint(0, 1)]
+                zombie.y = random.randint((screen.get_rect().height // 100 * 50) + (screen.get_rect().width // 100 * 10), 
+                    screen.get_rect().height - (screen.get_rect().width // 100 * 10))
 
+            # Атака зомби в случае соприкосновения с игроком
+            if pochito.rect.colliderect(zombie.rect):
+                if zombie.rect.bottom in range( pochito.rect.bottom -50, pochito.rect.bottom + 50):
+                    if zombie.first_contact == 0:
+                        zombie.first_contact = time.time()
+                    
+                    else:
+                        resume = time.time() - zombie.first_contact 
+                        if resume >= 1:
+                            zombie.first_contact = 0
+                            pochito.health -= zombie.attak
+                            ui.shake_screen()
 
-def controll(pygame, screen, pochito, zombies, ui):
+        # Обновление крови
+        for blood in bloods.sprites():
+            if time.time() >= blood.end_time:
+                bloods.remove(blood)
+                
+        bloods.draw(screen)
+        zombies.draw(screen)
+        pochito.drawing()
+
+        pygame.display.flip()
+
+    else:
+        # On Die
+        pygame.mixer.music.set_volume(0.2)
+        screen.blit(pygame.transform.scale(pygame.image.load("src/bg.png").convert_alpha(), (screen.get_rect().width, screen.get_rect().height)), (0, 0))  # Установка заднего фона
+
+        Font = pygame.font.Font(font_family, 50)
+        Font2 = pygame.font.Font(font_family, 40)
+        text = Font.render("You Die", 1, (255, 0, 0))
+        text_count = Font2.render("Count - " + str(pochito.kills_count), 1, (255, 0, 0))
+        screen.blit(text, (WIDTH // 2 - text.get_width(), HEIGHT // 2 - text.get_height() - text_count.get_height() - 20))
+        screen.blit(text_count, ( WIDTH // 2 - text_count.get_width(), HEIGHT // 2 - text_count.get_height()))
+
+        pygame.display.flip()
+	
+def controll(pygame, screen, pochito, zombies, ui, bloods):
     """
         Контролер, действия после нажатия определённых клавиш
     """
     keys = pygame.key.get_pressed()  # Получаем нажатые клавиши
 
+    if keys[pygame.K_ESCAPE]:
+        pygame.quit()
+
     # Движение + Атака
-    if keys[pygame.K_d] == True and keys[pygame.K_RIGHT] == True:
+    if keys[pygame.K_RIGHT] == True and keys[pygame.K_d] == True:
         # Движение вправо и атака
         for zombie in zombies.sprites():
             if pochito.rect.colliderect(zombie.rect):
-                zombie.health -= pochito.attak
+                if zombie.rect.bottom in range( pochito.rect.bottom -50, pochito.rect.bottom + 50):
+                    zombie.health -= pochito.attak
 
         pochito.check_attak = True
         pochito.update([1, 0], "right_attak")
 
         return
 
-    elif keys[pygame.K_a] == True and keys[pygame.K_LEFT] == True:
+    elif keys[pygame.K_LEFT] == True and keys[pygame.K_a] == True:
         # Движение влево и атака
         for zombie in zombies.sprites():
             if pochito.rect.colliderect(zombie.rect):
-                zombie.health -= pochito.attak
+                if zombie.rect.bottom in range( pochito.rect.bottom -50, pochito.rect.bottom + 50):
+                    zombie.health -= pochito.attak
 
         pochito.check_attak = True
         pochito.update([-1, 0], "left_attak")
 
         return
 
+    # Attak
+    elif keys[pygame.K_RIGHT] == True:
+        # Движение вправо и атака
+        for zombie in zombies.sprites():
+            if pochito.rect.colliderect(zombie.rect):
+                if zombie.rect.bottom in range( pochito.rect.bottom -50, pochito.rect.bottom + 50):
+                    zombie.health -= pochito.attak
+
+        pochito.check_attak = True
+        pochito.update([0, 0], "right_attak")
+
+        return
+
+    elif keys[pygame.K_LEFT] == True:
+        # Движение влево и атака
+        for zombie in zombies.sprites():
+            if pochito.rect.colliderect(zombie.rect):
+                if zombie.rect.bottom in range( pochito.rect.bottom -50, pochito.rect.bottom + 50):
+                    zombie.health -= pochito.attak
+
+        pochito.check_attak = True
+        pochito.update([0, 0], "left_attak")
+
+        return
+
     # Move
-    if keys[pygame.K_a] == True and keys[pygame.K_w] == True:
+    elif keys[pygame.K_a] == True and keys[pygame.K_w] == True:
         # Движение в лево-вверх
         pochito.check_attak = False
         pochito.update([-1, -1], "left")
 
-        updates(pygame, screen, pochito, zombies, ui)
+        updates(pygame, screen, pochito, zombies, ui, bloods)
 
     elif keys[pygame.K_w] == True and keys[pygame.K_d] == True:
         # Движение вверх-право
         pochito.check_attak = False
         pochito.update([1, -1], "right")
 
-        updates(pygame, screen, pochito, zombies, ui)
+        updates(pygame, screen, pochito, zombies, ui, bloods)
 
     elif keys[pygame.K_d] == True and keys[pygame.K_s] == True:
         # Движение в право-вниз
         pochito.check_attak = False
         pochito.update([1, 1], "right")
 
-        updates(pygame, screen, pochito, zombies, ui)
+        updates(pygame, screen, pochito, zombies, ui, bloods)
 
     elif keys[pygame.K_s] == True and keys[pygame.K_a] == True:
         # Движение в лево-вниз
         pochito.check_attak = False
         pochito.update([-1, 1], "left")
 
-        updates(pygame, screen, pochito, zombies, ui)
+        updates(pygame, screen, pochito, zombies, ui, bloods)
 
-    if keys[pygame.K_a]:
+    elif keys[pygame.K_a]:
         # Движение в лево
         pochito.check_attak = False
         pochito.update([-1, 0], "left")
 
-        updates(pygame, screen, pochito, zombies, ui)
+        updates(pygame, screen, pochito, zombies, ui, bloods)
 
     elif keys[pygame.K_w]:
         # Движение вверх
         pochito.check_attak = False
         pochito.update([0, -1], pochito.direction)
 
-        updates(pygame, screen, pochito, zombies, ui)
+        updates(pygame, screen, pochito, zombies, ui, bloods)
 
     elif keys[pygame.K_d]:
         # Движение вправо
         pochito.check_attak = False
         pochito.update([1, 0], "right")
 
-        updates(pygame, screen, pochito, zombies, ui)
+        updates(pygame, screen, pochito, zombies, ui, bloods)
 
     elif keys[pygame.K_s]:
         # Движение вниз
         pochito.check_attak = False
         pochito.update([0, 1], pochito.direction)
 
-        updates(pygame, screen, pochito, zombies, ui)
+        updates(pygame, screen, pochito, zombies, ui, bloods)
 
     else:
         pochito.check_attak = False
         pochito.image_anim_count = 0
+        if pochito.direction == "right_attak":
+            pochito.update([0, 0], "right")
+        elif pochito.direction == "left_attak":
+            pochito.update([0, 0], "left")
+        elif pochito.direction == "left":
+            pochito.update([0, 0], "left")
 
-        updates(pygame, screen, pochito, zombies, ui)
+        updates(pygame, screen, pochito, zombies, ui, bloods)
 
 
 def create_zombie(screen, zombies, count_zombie: int):
     """
         Функция генерирует зомби в заданном колличестве `count_zombie`
     """
+
     for item in range(count_zombie):
-        random_pos_x = [random.randint(-200, -100), random.randint(900, 1000)]
+        random_pos_x = [random.randint(-screen.get_rect().width // 100 * 10, 0), 
+            random.randint(screen.get_rect().width, screen.get_rect().width + screen.get_rect().width // 100 * 10)]
 
         pos_x = random_pos_x[random.randint(0, 1)]
-        pos_y = random.randint(200, 400)
+        pos_y = random.randint((screen.get_rect().height // 100 * 50) + (screen.get_rect().width // 100 * 10), 
+            screen.get_rect().height - (screen.get_rect().width // 100 * 10))
 
         # Создание и добавление зомби
         zombie = Zombie(screen, pos_x, pos_y)
