@@ -26,10 +26,10 @@ def View(pygame, screen):
 
     ctrl.create_zombie(screen, zombies, 5)
 
-    # pygame.mixer.init()
-    # pygame.mixer.music.load('sound/fight.mp3')
-    # pygame.mixer.music.set_volume(1)
-    # pygame.mixer.music.play(-1)
+    pygame.mixer.init()
+    pygame.mixer.music.load('sound/fight.mp3')
+    pygame.mixer.music.set_volume(1)
+    pygame.mixer.music.play(-1)
 
     round_timer = time.time()
     round_game = 0 # Какой раунд сейчас в игре

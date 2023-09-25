@@ -53,7 +53,7 @@ class Zombie(pygame.sprite.Sprite):
 
         # Zombie Varaible
         self.health = 100
-        self.attak = 10
+        self.attak = 1
         self.speed = 1
         self.direction_slop = random.choice([-1, 0, 1])  # Направление куда будет постоянно уклоняться зомби
         self.direction_move = "right"  # Направление куда будет поворачиваться зомби
