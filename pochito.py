@@ -56,54 +56,48 @@ class Pochito(pygame.sprite.Sprite):
 
         # Переменные персонажа
         self.health = 100  # Здоровье
-        self.attak = 1  # Сила
+        self.attak_hit = 1  # Сила
         self.speed = 10  # Скорость
         self.direction = "right"
         self.check_attak = False  # Атакует ли Почито
         self.kills_count = 0  # Счётчик убийств
+        self.status = {"move_x":False,"move_y":False,"hit":False} # Move, Attak
 
     def drawing(self):
         if self.health >= 1:
 
-            if self.direction == "left_attak":
-                self.image = pygame.transform.flip(self.move_right_attak[self.image_anim_count], True, False)
-                self.screen.blit(self.image, (self.x, self.y,))
-
-            elif self.direction == "left":
-                self.image = pygame.transform.flip(self.move_right[self.image_anim_count], True, False)
-                self.screen.blit(self.image, (self.x, self.y,))
+            if self.direction == "left":
+                if self.status['hit']:
+                    self.image = pygame.transform.flip(self.move_right_attak[self.image_anim_count], True, False)
+                    self.screen.blit(self.image, (self.x, self.y,))
+                else:
+                    self.image = pygame.transform.flip(self.move_right[self.image_anim_count], True, False)
+                    self.screen.blit(self.image, (self.x, self.y,))
 
             elif self.direction == "right":
-                self.screen.blit(self.move_right[self.image_anim_count], (self.x, self.y,))
+                if self.status['hit']:
+                    self.screen.blit(self.move_right_attak[self.image_anim_count], (self.x, self.y,))
+                else:
+                    self.screen.blit(self.move_right[self.image_anim_count], (self.x, self.y,))
 
-            elif self.direction == "right_attak":
-                self.screen.blit(self.move_right_attak[self.image_anim_count], (self.x, self.y,))
 
-    def update(self, move: list, direction: str):
+    def update(self):
         if self.health >= 1:
-            if self.direction != direction:
-                self.image_anim_count = 0
-            self.direction = direction
 
-            if self.rect.bottom < self.screen_rect.bottom:
-                if self.rect.top > self.screen_height // 100 * 50:
-                    if self.rect.right < self.screen_rect.right:
-                        if self.rect.left > self.screen_rect.left:
+            # Движение
+            if self.rect.bottom < self.screen_rect.bottom: # Барьер снизу
+                if self.rect.top > self.screen_height // 100 * 50: # Барьер сверху
+                    if self.rect.right < self.screen_rect.right: # Барьер слева
+                        if self.rect.left > self.screen_rect.left: # Барьер справа
 
-                            if self.direction == "left_attak" or self.direction == "right_attak":
+                            if self.status['hit']:
                                 if self.image_anim_count < len(self.move_right_attak) - 1:
                                     self.image_anim_count += 1
                                 else:
                                     self.image_anim_count = 0
 
-                            elif self.direction == "left" or self.direction == "right":
-                                if self.image_anim_count < len(self.move_right) - 1:
-                                    self.image_anim_count += 1
-                                else:
-                                    self.image_anim_count = 0
-
-                            self.x += move[0] * self.speed
-                            self.y += move[1] * self.speed
+                            self.x += self.status["move_x"] * self.speed
+                            self.y += self.status["move_y"] * self.speed
                         else:
                             self.x += 5
                             self.y += 0

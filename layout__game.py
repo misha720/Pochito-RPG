@@ -17,19 +17,17 @@ def View(pygame, screen):
     HEIGHT = screen.get_rect().height
 
     pygame.font.init()
-    
 
     ui_ctrl = UI(screen)
     pochito = Pochito(screen, WIDTH // 2, HEIGHT // 2)
     zombies = pygame.sprite.Group()
-    bloods = pygame.sprite.Group()
 
     ctrl.create_zombie(screen, zombies, 5)
 
-    pygame.mixer.init()
-    pygame.mixer.music.load('sound/fight.mp3')
-    pygame.mixer.music.set_volume(1)
-    pygame.mixer.music.play(-1)
+    # pygame.mixer.init()
+    # pygame.mixer.music.load('sound/fight.mp3')
+    # pygame.mixer.music.set_volume(1)
+    # pygame.mixer.music.play(-1)
 
     round_timer = time.time()
     round_game = 0 # Какой раунд сейчас в игре
@@ -51,8 +49,8 @@ def View(pygame, screen):
             round_timer = time.time()
             round_game += 1
 
-        ctrl.controll(pygame, screen, pochito, zombies, ui_ctrl, bloods)
-        ctrl.updates(pygame, screen, pochito, zombies, ui_ctrl, bloods)
-        zombies.update([pochito.x, pochito.y], pochito.check_attak)
+        ctrl.controll(pygame, screen, pochito, zombies, ui_ctrl)
+        ctrl.updates(pygame, screen, pochito, zombies, ui_ctrl)
+        zombies.update([pochito.x, pochito.y], pochito.check_attak, [pochito.rect.width,pochito.rect.height])
 
             
