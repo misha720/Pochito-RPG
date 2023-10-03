@@ -1,46 +1,35 @@
 """
-	Pochito RPG
+	Pochito RPG v1
+	Powered by Zero, SCH
 """
 
 # Import
 import pygame
-import layout__game as Game
-import layout__menu as Menu
+import json
 
-# Value
-pygame.init()  # Инициализация
+import scene_menu as SceneMenu
+#from scene_level import SceneLevel
 
-scene_menu = 0
-scene_game = 2  # Установка сцены
-activity = {
-    'load': scene_menu,
-    'name_level': ""
-}
+class Main():
+	def __init__(self):
+		pygame.init()
 
-WIDTH = 700
-HEIGHT = 500
-FPS = 60
+		# Load config file
+		with open('config.json', 'r') as fconfig:
+			config = json.load(fconfig)
 
+		# Screen
+		screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+		pygame.display.set_caption('Pochito RPG')
+		pygame.display.set_icon(pygame.image.load('pochito_ico.ico'))
 
-# Function
-def engine():
-    screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
-    pygame.display.set_caption('Pochito RPG')
-    pygame.display.set_icon(pygame.image.load('pochito_ico.ico'))
-    global activity  # В начале запустить
-
-    while True:
-        if activity['load'] == scene_menu:
-        	activity['load'] = Menu.View(pygame, screen)
-
-        # elif activity['load'] == scene_map:
-        # 	activity = Map.View(pygame, screen)
-
-        if activity['load'] == scene_game:
-            # activity['load'] = Game.View(pygame, screen, str(activity['run_game']))
-            activity['load'] = Game.View(pygame, screen)
-
+		while True:
+			if config['view'] == "menu":
+				config = SceneMenu.SceneMenu(pygame, screen, config)
+			elif config['view'] == "level":
+				config = SceneLevel(pygame, screen, config, config['level'])
 
 # Run
 if __name__ == '__main__':
-    engine()
+    Main()
+		
