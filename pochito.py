@@ -1,4 +1,5 @@
 import pygame
+import os
 
 
 class Pochito(pygame.sprite.Sprite):
@@ -13,103 +14,144 @@ class Pochito(pygame.sprite.Sprite):
         self.screen_width = self.screen_rect.width
         self.screen_height = self.screen_rect.height
 
-        self.move_right = [
-            pygame.transform.scale(pygame.image.load('src/pochito_right1.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right2.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right3.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right4.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right5.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right6.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right7.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right8.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right9.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right10.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_right11.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10))
-        ]
-        self.move_right_attak = [
-        	pygame.transform.scale(pygame.image.load('src/pochito_attak_right1.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10)),
-            pygame.transform.scale(pygame.image.load('src/pochito_attak_right2.png').convert_alpha(), 
-                (self.screen_width // 100 * 10, self.screen_width // 100 * 10))
-        ]
-        self.image_anim_count = 0
+        # Pochito Move
+        self.move_frames = []
+        for frame_path in os.listdir('src/pochito/move'):
+            frame_path = "src/pochito/move/" + frame_path
+            frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
+                (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
+            self.move_frames.append(frame)
+            
+        # Pochito Hit
+        self.hit_frames = []
+        for frame_path in os.listdir('src/pochito/hit'):
+            frame_path = "src/pochito/hit/" + frame_path
+            frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
+                (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
+            self.hit_frames.append(frame)
+        
+        # Pochito Super Hit
+        self.super_hit_frames = []
+        for frame_path in os.listdir('src/pochito/super_hit'):
+            frame_path = "src/pochito/super_hit/" + frame_path
+            frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
+                (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
+            self.super_hit_frames.append(frame)
 
-        self.image = self.move_right[0]
-
+        # Image
+        self.count_frame_move = 0
+        self.count_frame_hit = 0
+        self.count_frame_super = 0
+        self.delay_move = 0
+        self.delay_hit = 0
+        self.delay_super = 0
+        self.image = self.move_frames[0]
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
         self.x = float(self.rect.x)
         self.y = float(self.rect.y)
 
         # Переменные персонажа
         self.health = 100  # Здоровье
-        self.attak_hit = 1  # Сила
-        self.speed = 10  # Скорость
+        self.attak_hit = 0.5  # Сила
+        self.attak_super_hit = 3  # Сила
+        self.speed = 5  # Скорость
         self.direction = "right"
         self.check_attak = False  # Атакует ли Почито
         self.kills_count = 0  # Счётчик убийств
-        self.status = {"move_x":False,"move_y":False,"hit":False} # Move, Attak
+        self.status = {"move_x":0,"move_y":0,"hit":False, "super":False} # Move, Attak
+        self.alive = True
 
     def drawing(self):
         if self.health >= 1:
 
             if self.direction == "left":
                 if self.status['hit']:
-                    self.image = pygame.transform.flip(self.move_right_attak[self.image_anim_count], True, False)
+                    self.image = pygame.transform.flip(self.hit_frames[self.count_frame_hit], True, False)
                     self.screen.blit(self.image, (self.x, self.y,))
+
+                elif self.status['super']:
+                    self.image = pygame.transform.flip(self.super_hit_frames[self.count_frame_super], True, False)
+                    self.screen.blit(self.image, (self.x, self.y,))
+                
                 else:
-                    self.image = pygame.transform.flip(self.move_right[self.image_anim_count], True, False)
+                    self.image = pygame.transform.flip(self.move_frames[self.count_frame_move], True, False)
                     self.screen.blit(self.image, (self.x, self.y,))
 
             elif self.direction == "right":
                 if self.status['hit']:
-                    self.screen.blit(self.move_right_attak[self.image_anim_count], (self.x, self.y,))
+                    self.screen.blit(self.hit_frames[self.count_frame_hit], (self.x, self.y,))
+
+                elif self.status['super']:
+                    self.screen.blit(self.super_hit_frames[self.count_frame_super], (self.x, self.y,))
+                
                 else:
-                    self.screen.blit(self.move_right[self.image_anim_count], (self.x, self.y,))
+                    self.screen.blit(self.move_frames[self.count_frame_move], (self.x, self.y,))
 
 
     def update(self):
-        if self.health >= 1:
+        if self.is_alive():
 
             # Движение
             if self.rect.bottom < self.screen_rect.bottom: # Барьер снизу
-                if self.rect.top > self.screen_height // 100 * 50: # Барьер сверху
+                if self.rect.top > self.screen_height // 100 * 40: # Барьер сверху
                     if self.rect.right < self.screen_rect.right: # Барьер слева
                         if self.rect.left > self.screen_rect.left: # Барьер справа
 
                             if self.status['hit']:
-                                if self.image_anim_count < len(self.move_right_attak) - 1:
-                                    self.image_anim_count += 1
+                                if self.count_frame_hit < len(self.hit_frames) - 1:
+                                    self.delay_hit += 1
+                                    if self.delay_hit > 10:
+                                        self.count_frame_hit += 1
+                                        self.delay_hit = 0
                                 else:
-                                    self.image_anim_count = 0
+                                    self.count_frame_hit = 0
+
+                            if self.status['super']:
+                                if self.count_frame_super < len(self.super_hit_frames) - 1:
+                                    self.delay_super += 1
+                                    if self.delay_super > 10:
+                                        self.count_frame_super += 1
+                                        self.delay_super = 0
+                                else:
+                                    self.count_frame_super = 0
+
+                            if self.status['move_x'] != 0 or self.status['move_y'] != 0:
+                                if self.count_frame_move < len(self.move_frames) - 1:
+                                    self.delay_move += 1
+                                    if self.delay_move > 10:
+                                        self.count_frame_move += 1
+                                        self.delay_move = 0
+                                else:
+                                    self.count_frame_move = 0
 
                             self.x += self.status["move_x"] * self.speed
                             self.y += self.status["move_y"] * self.speed
                         else:
-                            self.x += 5
+                            self.x += 10
                             self.y += 0
                     else:
-                        self.x -= 5
+                        self.x -= 10
                         self.y += 0
                 else:
                     self.x += 0
-                    self.y += 5
+                    self.y += 10
             else:
                 self.x += 0
-                self.y -= 5
+                self.y -= 10
 
             self.rect.x = self.x
             self.rect.y = self.y
+
+
+    def is_alive(self):
+        """
+            Check pochito is alive
+        """
+        if self.health <= 0:
+            self.alive == False
+            return False
+        else:
+            self.alive == True
+            return True

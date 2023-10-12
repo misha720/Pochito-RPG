@@ -4,17 +4,59 @@ import time
 from zombie import Zombie
 
 
-def updates(pygame, screen, pochito, zombies, ui):
-    font_family = pygame.font.match_font("ubuntu")
+def updates(pygame, screen, config, pochito, zombies, ui, zombie_demon, zombie_demon_weapon):
     WIDTH = screen.get_rect().width
     HEIGHT = screen.get_rect().height
     
-    if pochito.health >= 1:
-        # On Live
+    if pochito.is_alive():
+        # Alive         
+
+        ui.drawing()
         
-        # UI
-        ui.drawing(pochito.health)
+        # Round Update
+        if ui.round_game != ui.minute_since_past_round:
+            ui.round_game += 1
+            create_zombie(screen, zombies, 5)
+
+        # Called Boss
+        if ui.round_game == 1 and zombie_demon.called == False:
+            # Даём сигнал
+            signal_to_boss = pygame.mixer.Sound("sound/signal_boss.wav")
+            signal_to_boss.set_volume(config["settings"]["sound_volume"])
+            signal_to_boss.play(0)
+            ui.is_signed_worked = True
+            
+            # Призываем боса
+            zombie_demon.called = True
+            zombie_demon.time_called = time.time()
+
+
+
+        # Boss
+        if zombie_demon.called:
+            recharge_boss_shot = time.time() - zombie_demon.time_called # Замеряется время с последнего выстрела
+            if recharge_boss_shot >= 10: # Перезарядка 20 сек 
+                zombie_demon.status = "attak"
+                zombie_demon.time_called = time.time()
+
+            #Boss Attak
+            if pochito.rect.colliderect(zombie_demon.rect):
+                if zombie_demon.is_used_weapon == False:
+                    if pochito.status['hit']:
+                        zombie_demon.health -= pochito.attak_hit
+                            
+                    if pochito.status['super']:
+                        zombie_demon.health -= pochito.attak_super_hit
+
+            if pochito.rect.colliderect(zombie_demon_weapon.weapon_rect):
+                if zombie_demon.is_used_weapon == True:
+                    pochito.health -= zombie_demon.attak
+                    ui.shake_screen()
+
+
         pochito.update()
+        zombie_demon.update([pochito.x + pochito.rect.width // 2, pochito.y + pochito.rect.height // 2])
+        zombie_demon_weapon.update(zombie_demon)
 
         # GAME
 
@@ -23,7 +65,7 @@ def updates(pygame, screen, pochito, zombies, ui):
             if zombie.health <= 0:
                 # Зомби умирает
                 zombie.status = "die"
-                if zombie.image_anim_count == len(zombie.die_images)-1:
+                if zombie.count_frame_die == len(zombie.die_frames)-1:
 
                     if pochito.health <= 100:  # Ограничение, что бы здоровья всегда было мало
                         pochito.health += 10
@@ -32,6 +74,12 @@ def updates(pygame, screen, pochito, zombies, ui):
                     zombie.health = 100
                     zombie.direction_slop = random.choice([-1, 0, 1])
                     zombie.status = "move"
+                    zombie.count_frame_move = 0
+                    zombie.count_frame_attak = 0
+                    zombie.count_frame_die = 0
+                    zombie.delay_move = 0
+                    zombie.delay_attak = 0
+                    zombie.delay_die = 0
                     pochito.kills_count += 1
 
                     random_pos_x = [random.randint(-screen.get_rect().width // 100 * 10, 0), 
@@ -45,6 +93,10 @@ def updates(pygame, screen, pochito, zombies, ui):
                 if zombie.rect.bottom in range( pochito.rect.bottom -50, pochito.rect.bottom + 50):
                     if pochito.status['hit']:
                         zombie.health -= pochito.attak_hit
+                    
+                    if pochito.status['super']:
+                        zombie.health -= pochito.attak_super_hit
+
                     if zombie.first_contact == 0:
                         zombie.first_contact = time.time()
                         zombie.status = "attak"
@@ -54,30 +106,33 @@ def updates(pygame, screen, pochito, zombies, ui):
                         if resume >= 1:
                             zombie.first_contact = 0
                             pochito.health -= zombie.attak
-                            ui.shake_screen() 
+                            ui.shake_screen()
             else:
                 zombie.status = "move"
 
         zombies.draw(screen)
         pochito.drawing()
-
-        pygame.display.flip()
+        zombie_demon.drawing()
+        zombie_demon_weapon.drawing()
 
     else:
-        # On Die
-        pygame.mixer.music.set_volume(0.2)
-        screen.blit(pygame.transform.scale(pygame.image.load("src/bg.png").convert_alpha(), (screen.get_rect().width, screen.get_rect().height)), (0, 0))  # Установка заднего фона
+        # No Alive
+        ui.drawing()
 
-        Font = pygame.font.Font(font_family, 50)
-        Font2 = pygame.font.Font(font_family, 40)
-        text = Font.render("You Die", 1, (255, 0, 0))
-        text_count = Font2.render("Count - " + str(pochito.kills_count), 1, (255, 0, 0))
-        screen.blit(text, (WIDTH // 2 - text.get_width(), HEIGHT // 2 - text.get_height() - text_count.get_height() - 20))
-        screen.blit(text_count, ( WIDTH // 2 - text_count.get_width(), HEIGHT // 2 - text_count.get_height()))
+        if pochito.is_alive():
+            pochito.kill()
 
-        pygame.display.flip()
+        # Sound
+        if config['settings']['sound_volume'] >= 0.2:
+            pygame.mixer.music.set_volume(config['settings']['sound_volume'] - 0.2)
+        else:
+            pygame.mixer.music.set_volume(config['settings']['sound_volume'])
+        
+    
+    # Update Screen
+    pygame.display.flip()
 	
-def controll(pygame, screen, pochito, zombies, ui):
+def controll(pygame, screen, pochito):
     """
         Контролер, действия после нажатия определённых клавиш
     """
@@ -113,6 +168,25 @@ def controll(pygame, screen, pochito, zombies, ui):
 
     else:
         pochito.status['hit'] = False
+        pochito.check_attak = False
+
+    # Super Hit
+    if keys[pygame.K_UP]:
+        if not keys[pygame.K_LEFT]:
+            pochito.status['super'] = True
+            pochito.status['hit'] = False
+            pochito.check_attak = True
+
+            if pochito.direction == "right":
+                pochito.status['move_x'] = 5
+            else:
+                pochito.status['move_x'] = -5
+
+            pochito.status['move_y'] = 0
+
+            return
+    else:
+        pochito.status['super'] = False
         pochito.check_attak = False
 
     # Move Top + Move Right
@@ -175,8 +249,6 @@ def controll(pygame, screen, pochito, zombies, ui):
         pochito.status['hit'] = False
         pochito.check_attak = False
         return
-
-    updates(pygame, screen, pochito, zombies, ui)
 
 
 def create_zombie(screen, zombies, count_zombie: int):
