@@ -1,5 +1,6 @@
 import pygame
 import os
+import time
 
 
 class Pochito(pygame.sprite.Sprite):
@@ -7,7 +8,7 @@ class Pochito(pygame.sprite.Sprite):
         Класс отвечающий за почиту
     """
 
-    def __init__(self, screen, x, y):
+    def __init__(self, screen, position):
         super(Pochito, self).__init__()
         self.screen = screen
         self.screen_rect = self.screen.get_rect()  # Получаем границы экрана
@@ -16,7 +17,7 @@ class Pochito(pygame.sprite.Sprite):
 
         # Pochito Move
         self.move_frames = []
-        for frame_path in os.listdir('src/pochito/move'):
+        for frame_path in sorted(os.listdir('src/pochito/move')):
             frame_path = "src/pochito/move/" + frame_path
             frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
                 (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
@@ -24,7 +25,7 @@ class Pochito(pygame.sprite.Sprite):
             
         # Pochito Hit
         self.hit_frames = []
-        for frame_path in os.listdir('src/pochito/hit'):
+        for frame_path in sorted(os.listdir('src/pochito/hit')):
             frame_path = "src/pochito/hit/" + frame_path
             frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
                 (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
@@ -32,7 +33,7 @@ class Pochito(pygame.sprite.Sprite):
         
         # Pochito Super Hit
         self.super_hit_frames = []
-        for frame_path in os.listdir('src/pochito/super_hit'):
+        for frame_path in sorted(os.listdir('src/pochito/super_hit')):
             frame_path = "src/pochito/super_hit/" + frame_path
             frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
                 (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
@@ -47,8 +48,8 @@ class Pochito(pygame.sprite.Sprite):
         self.delay_super = 0
         self.image = self.move_frames[0]
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.x = position[0]
+        self.rect.y = position[1]
         self.x = float(self.rect.x)
         self.y = float(self.rect.y)
 
@@ -56,7 +57,7 @@ class Pochito(pygame.sprite.Sprite):
         self.health = 100  # Здоровье
         self.attak_hit = 0.5  # Сила
         self.attak_super_hit = 3  # Сила
-        self.speed = 5  # Скорость
+        self.speed = 1  # Скорость
         self.direction = "right"
         self.check_attak = False  # Атакует ли Почито
         self.kills_count = 0  # Счётчик убийств
@@ -90,8 +91,9 @@ class Pochito(pygame.sprite.Sprite):
                     self.screen.blit(self.move_frames[self.count_frame_move], (self.x, self.y,))
 
 
-    def update(self):
+    def update(self, FPS):
         if self.is_alive():
+            self.speed = FPS // 20
 
             # Движение
             if self.rect.bottom < self.screen_rect.bottom: # Барьер снизу

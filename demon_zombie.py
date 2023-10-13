@@ -17,7 +17,7 @@ class ZombieDemon(pygame.sprite.Sprite):
 
         # ZD move
         self.move_frames = []
-        for frame_path in os.listdir('src/ZombieDemon/move'):
+        for frame_path in sorted(os.listdir('src/ZombieDemon/move')):
             frame_path = "src/ZombieDemon/move/" + frame_path
             frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
                 (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
@@ -25,27 +25,27 @@ class ZombieDemon(pygame.sprite.Sprite):
 
         # ZD attak
         self.attak_frames = []
-        for frame_path in os.listdir('src/ZombieDemon/attak'):
+        for frame_path in sorted(os.listdir('src/ZombieDemon/attak')):
             frame_path = "src/ZombieDemon/attak/" + frame_path
             frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
                 (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
             self.attak_frames.append(frame)
 
-        
-
         # ZD die
-        # self.move_frames = []
-        # for frame_path in os.listdir('src/ZombieDemon/move'):
-        #     frame_path = "src/pochito/move/" + frame_path
-        #     frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
-        #         (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
-        #     self.move_frames.append(frame)
+        self.die_frames = []
+        for frame_path in sorted(os.listdir('src/ZombieDemon/die/')):
+            frame_path = "src/ZombieDemon/die/" + frame_path
+            frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
+                (self.screen_width // 100 * 15, self.screen_width // 100 * 10))
+            self.die_frames.append(frame)
 
         # Image
         self.count_frame_move = 0
         self.count_frame_attak = 0
+        self.count_frame_die = 0
         self.delay_move = 0 # Сколько приходиться кадров на один фрейм
         self.delay_attak = 0 # Сколько приходиться кадров на один фрейм
+        self.delay_die = 0
         self.image = self.move_frames[0]
         self.rect = self.image.get_rect()
         self.size = [self.rect.width, self.rect.height]
@@ -54,10 +54,8 @@ class ZombieDemon(pygame.sprite.Sprite):
         self.x = float(self.rect.x)
         self.y = float(self.rect.y)
 
-        
-
         # ZD Varaible
-        self.health = 1000
+        self.health = 10_000
         self.attak = 1
         self.speed = 1
         self.direction = "right"  # Направление куда будет поворачиваться зомби
@@ -76,14 +74,14 @@ class ZombieDemon(pygame.sprite.Sprite):
 
     def drawing(self):
         if self.called:
-            if self.health >= 1:
+            if self.is_alive():
 
                 if self.direction == "left":
                     if self.status == "attak":
                         self.image = pygame.transform.flip(self.attak_frames[self.count_frame_attak], True, False)
                         self.screen.blit(self.image, (self.x, self.y,))
                         
-                    else:
+                    elif self.status == "move":
                         self.image = pygame.transform.flip(self.move_frames[self.count_frame_move], True, False)
                         self.screen.blit(self.image, (self.x, self.y,))
 
@@ -91,13 +89,23 @@ class ZombieDemon(pygame.sprite.Sprite):
                     if self.status == "attak":
                         self.screen.blit(self.attak_frames[self.count_frame_attak], (self.x, self.y,))
                     
-                    else:
+                    elif self.status == "move":
                         self.screen.blit(self.move_frames[self.count_frame_move], (self.x, self.y,))
 
+            else:
+                # Die
+                if self.direction == "left":
+                    self.image = pygame.transform.flip(self.die_frames[self.count_frame_die], True, False)
+                    self.screen.blit(self.image, (self.x, self.y,))
 
-    def update(self, pochito_pos):
+                elif self.direction == "right":
+                    self.screen.blit(self.die_frames[self.count_frame_die], (self.x, self.y,))
+
+
+    def update(self, FPS, pochito_pos):
         if self.called:
             if self.is_alive():
+                self.speed = FPS // 50
 
                 # Controll Attak
                 if self.status == "attak":
@@ -118,7 +126,7 @@ class ZombieDemon(pygame.sprite.Sprite):
                         # Запустить weapon
                         self.is_used_weapon = True
 
-                else:
+                elif self.status == "move":
                     # Движение
                     if self.rect.bottom < self.screen_rect.bottom: # Барьер снизу
                         if self.rect.top > self.screen_height // 100 * 40: # Барьер сверху
@@ -167,6 +175,20 @@ class ZombieDemon(pygame.sprite.Sprite):
                 self.rect.x = self.x
                 self.rect.y = self.y
 
+            else:
+                # Die
+                
+                self.status = 'die'
+                self.is_used_weapon = False
+
+                # Animation
+                if self.count_frame_die < len(self.die_frames) - 1:
+                    self.delay_die += 1
+                    if self.delay_die > 10:
+                        self.count_frame_die += 1
+                        self.delay_die = 0
+                else:
+                    self.called = False
 
     def is_alive(self):
         """

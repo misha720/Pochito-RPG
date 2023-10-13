@@ -17,7 +17,7 @@ class Zombie(pygame.sprite.Sprite):
 
         # Zombie Move
         self.move_frames = []
-        for frame_path in os.listdir('src/zombie/move/'):
+        for frame_path in sorted(os.listdir('src/zombie/move/')):
             frame_path = "src/zombie/move/" + frame_path
             frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
                 (self.screen_width // 100 * 10, self.screen_width // 100 * 10))
@@ -25,7 +25,7 @@ class Zombie(pygame.sprite.Sprite):
 
         # Zombie Attak
         self.attak_frames = []
-        for frame_path in os.listdir('src/zombie/attak/'):
+        for frame_path in sorted(os.listdir('src/zombie/attak/')):
             frame_path = "src/zombie/attak/" + frame_path
             frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
                 (self.screen_width // 100 * 10, self.screen_width // 100 * 10))
@@ -33,7 +33,7 @@ class Zombie(pygame.sprite.Sprite):
         
         # Zombie Die
         self.die_frames = []
-        for frame_path in os.listdir('src/zombie/die/'):
+        for frame_path in sorted(os.listdir('src/zombie/die/')):
             frame_path = "src/zombie/die/" + frame_path
             frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
                 (self.screen_width // 100 * 10, self.screen_width // 100 * 10))
@@ -62,7 +62,8 @@ class Zombie(pygame.sprite.Sprite):
         self.first_contact = 0 # При соприкосновении с почито, запишется время
         self.status = 'move' # Move, Attak, Die
 
-    def update(self, pochito_pos, pochito_check_attak, pochito_size):
+    def update(self, FPS, pochito_pos, pochito_check_attak, pochito_size):
+        self.speed = FPS // 40
         if self.status == "move":
             if self.count_frame_move < len(self.move_frames) - 1:
                 self.delay_move += 1

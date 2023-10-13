@@ -18,7 +18,7 @@ def View(pygame, screen, config):
     WIDTH = screen.get_rect().width
     HEIGHT = screen.get_rect().height
     
-    pochito = Pochito(screen, WIDTH // 2, HEIGHT // 2)
+    pochito = Pochito(screen, [WIDTH // 2, HEIGHT // 2])
     zombies = pygame.sprite.Group()
     zombie_demon = ZombieDemon(screen, WIDTH, HEIGHT // 100 * 20)
     zombie_demon_weapon = ZombieDemonWeapon(screen)
@@ -49,7 +49,7 @@ def View(pygame, screen, config):
                 pygame.quit()
 
         ctrl.controll(pygame, screen, pochito)
-        ctrl.updates(pygame, screen, config, pochito, zombies, ui_ctrl, zombie_demon, zombie_demon_weapon)
-        zombies.update([pochito.x, pochito.y], pochito.check_attak, [pochito.rect.width,pochito.rect.height])
+        ctrl.updates(pygame, screen, config, FPS, pochito, zombies, ui_ctrl, zombie_demon, zombie_demon_weapon)
+        zombies.update(FPS, [pochito.x, pochito.y], pochito.check_attak, [pochito.rect.width,pochito.rect.height])
 
             

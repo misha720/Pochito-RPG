@@ -4,7 +4,7 @@ import time
 from zombie import Zombie
 
 
-def updates(pygame, screen, config, pochito, zombies, ui, zombie_demon, zombie_demon_weapon):
+def updates(pygame, screen, config, FPS, pochito, zombies, ui, zombie_demon, zombie_demon_weapon):
     WIDTH = screen.get_rect().width
     HEIGHT = screen.get_rect().height
     
@@ -19,7 +19,7 @@ def updates(pygame, screen, config, pochito, zombies, ui, zombie_demon, zombie_d
             create_zombie(screen, zombies, 5)
 
         # Called Boss
-        if ui.round_game == 1 and zombie_demon.called == False:
+        if ui.round_game == 3 and zombie_demon.called == False:
             # Даём сигнал
             signal_to_boss = pygame.mixer.Sound("sound/signal_boss.wav")
             signal_to_boss.set_volume(config["settings"]["sound_volume"])
@@ -54,8 +54,8 @@ def updates(pygame, screen, config, pochito, zombies, ui, zombie_demon, zombie_d
                     ui.shake_screen()
 
 
-        pochito.update()
-        zombie_demon.update([pochito.x + pochito.rect.width // 2, pochito.y + pochito.rect.height // 2])
+        pochito.update(FPS)
+        zombie_demon.update(FPS, [pochito.x + pochito.rect.width // 2, pochito.y + pochito.rect.height // 2])
         zombie_demon_weapon.update(zombie_demon)
 
         # GAME
