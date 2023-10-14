@@ -27,7 +27,7 @@ def main():
         if config['work_scene'] == "menu":
         	config = Menu.View(pygame, screen, config)
 
-        if config['work_scene'] == "game":
+        if config['work_scene'] == "arcade":
             config = Game.View(pygame, screen, config)
 
 

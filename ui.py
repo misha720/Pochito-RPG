@@ -1,5 +1,6 @@
 import pygame
 import time
+import os
 
 import controll as ctrl
 
@@ -35,20 +36,20 @@ class UI(pygame.sprite.Sprite):
             (self.screen_width // 100 * 10, self.screen_width // 100 * 10))
         
         # Pochito Healf
-        self.pochito_healf_array = [
-            pygame.transform.scale(pygame.image.load("src/healf_0.png").convert_alpha(), 
-                (self.screen_width // 100 * 20, self.screen_width // 100 * 20 // 2)),
-            pygame.transform.scale(pygame.image.load("src/healf_1.png").convert_alpha(), 
-                (self.screen_width // 100 * 20, self.screen_width // 100 * 20 // 2)),
-            pygame.transform.scale(pygame.image.load("src/healf_2.png").convert_alpha(), 
-                (self.screen_width // 100 * 20, self.screen_width // 100 * 20 // 2)),
-            pygame.transform.scale(pygame.image.load("src/healf_3.png").convert_alpha(), 
-                (self.screen_width // 100 * 20, self.screen_width // 100 * 20 // 2)),
-            pygame.transform.scale(pygame.image.load("src/healf_4.png").convert_alpha(), 
-                (self.screen_width // 100 * 20, self.screen_width // 100 * 20 // 2)),
-            pygame.transform.scale(pygame.image.load("src/healf_5.png").convert_alpha(), 
-                (self.screen_width // 100 * 20, self.screen_width // 100 * 20 // 2))
-        ]
+        self.pochito_healf_frames = []
+        for frame_path in sorted(os.listdir('src/ui/health/')):
+            frame_path = "src/ui/health/" + frame_path
+            frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
+                (self.screen_width // 100 * 20, self.screen_width // 100 * 4))
+            self.pochito_healf_frames.append(frame)
+
+        # Pochito Energy
+        self.pochito_energy_frames = []
+        for frame_path in sorted(os.listdir('src/ui/energy/')):
+            frame_path = "src/ui/energy/" + frame_path
+            frame = pygame.transform.scale(pygame.image.load(frame_path).convert_alpha(), 
+                (self.screen_width // 100 * 20, self.screen_width // 100 * 4))
+            self.pochito_energy_frames.append(frame)
 
         # Signal Icon
         self.is_signed_worked = False
@@ -76,32 +77,81 @@ class UI(pygame.sprite.Sprite):
             # Clock Game
             Font = pygame.font.Font(self.font_family, 60)
             text = Font.render(str( time.strftime("%M:%S",time.localtime(self.clock)) ), 1, (255, 255, 255))
-            self.screen.blit(text,(self.screen_width // 2 - text.get_rect().width, 20))
+            self.screen.blit(text,(self.screen_width // 2 - text.get_rect().width // 2, 20))
 
-            # Отображение Здоровья
+            # Draw Health
             if self.pochito.health >= 100:
                 # 100+
-                self.screen.blit(self.pochito_healf_array[5], (40 + self.screen_width // 100 * 10, 20))
+                self.screen.blit(self.pochito_healf_frames[0], 
+                    (20 + self.pochito_ico.get_rect().width + 20, 20))
 
             elif 80 <= self.pochito.health < 100:
                 # 80-100
-                self.screen.blit(self.pochito_healf_array[4], (40 + self.screen_width // 100 * 10, 20))
+                self.screen.blit(self.pochito_healf_frames[1], 
+                    (20 + self.pochito_ico.get_rect().width + 20, 20))
             
             elif 60 <= self.pochito.health < 80:
                 # 60-80
-                self.screen.blit(self.pochito_healf_array[3], (40 + self.screen_width // 100 * 10, 20))
+                self.screen.blit(self.pochito_healf_frames[2], 
+                    (20 + self.pochito_ico.get_rect().width + 20, 20))
             
             elif 40 <= self.pochito.health < 60:
                 # 40-60
-                self.screen.blit(self.pochito_healf_array[2], (40 + self.screen_width // 100 * 10, 20))
+                self.screen.blit(self.pochito_healf_frames[3], 
+                    (20 + self.pochito_ico.get_rect().width + 20, 20))
             
             elif 20 <= self.pochito.health < 40:
                 # 20-40
-                self.screen.blit(self.pochito_healf_array[1], (40 + self.screen_width // 100 * 10, 20))
+                self.screen.blit(self.pochito_healf_frames[4], 
+                    (20 + self.pochito_ico.get_rect().width + 20, 20))
             
-            elif 0 <= self.pochito.health < 20:
+            elif self.pochito.health < 20:
                 # 0-20
-                self.screen.blit(self.pochito_healf_array[0], (40 + self.screen_width // 100 * 10, 20))
+                self.screen.blit(self.pochito_healf_frames[5], 
+                    (20 + self.pochito_ico.get_rect().width + 20, 20))
+
+            # Draw Energy
+            if self.pochito.energy >= 100:
+                # 100+
+                self.screen.blit(self.pochito_energy_frames[0], 
+                    (20 + self.pochito_ico.get_rect().width + 20,
+                     20 + self.pochito_healf_frames[0].get_rect().height + 10))
+
+            elif 80 <= self.pochito.energy < 100:
+                # 80-100
+                self.screen.blit(self.pochito_energy_frames[1], 
+                    (20 + self.pochito_ico.get_rect().width + 20,
+                     20 + self.pochito_healf_frames[0].get_rect().height + 10))
+            
+            elif 60 <= self.pochito.energy < 80:
+                # 60-80
+                self.screen.blit(self.pochito_energy_frames[2], 
+                    (20 + self.pochito_ico.get_rect().width + 20,
+                     20 + self.pochito_healf_frames[0].get_rect().height + 10))
+            
+            elif 40 <= self.pochito.energy < 60:
+                # 40-60
+                self.screen.blit(self.pochito_energy_frames[3], 
+                    (20 + self.pochito_ico.get_rect().width + 20,
+                     20 + self.pochito_healf_frames[0].get_rect().height + 10))
+            
+            elif 20 <= self.pochito.energy < 40:
+                # 20-40
+                self.screen.blit(self.pochito_energy_frames[4], 
+                    (20 + self.pochito_ico.get_rect().width + 20,
+                     20 + self.pochito_healf_frames[0].get_rect().height + 10))
+            
+            elif 0 < int(self.pochito.energy) < 20 :
+                # 0-20
+                self.screen.blit(self.pochito_energy_frames[5], 
+                    (20 + self.pochito_ico.get_rect().width + 20,
+                     20 + self.pochito_healf_frames[0].get_rect().height + 10))
+
+            elif int(self.pochito.energy) <= 0:
+                # 0
+                self.screen.blit(self.pochito_energy_frames[6], 
+                    (20 + self.pochito_ico.get_rect().width + 20,
+                     20 + self.pochito_healf_frames[0].get_rect().height + 10))
 
             # Signal
             if self.is_signed_worked:

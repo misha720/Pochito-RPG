@@ -132,18 +132,25 @@ def updates(pygame, screen, config, FPS, pochito, zombies, ui, zombie_demon, zom
     # Update Screen
     pygame.display.flip()
 	
-def controll(pygame, screen, pochito):
+def controll(pygame, screen, config, pochito):
     """
         Контролер, действия после нажатия определённых клавиш
     """
     keys = pygame.key.get_pressed()  # Получаем нажатые клавиши
 
     if keys[pygame.K_ESCAPE]:
-        pygame.quit()
+        config["work_scene"] = "menu"
+        return
+
+    if keys[pygame.K_UP] == False:
+        if pochito.energy < 100:
+            pochito.energy += 0.1
+        pochito.status['super'] = False
 
     # Simple Hit + Move Left
     if keys[pygame.K_LEFT] == True and keys[pygame.K_a] == True:
         pochito.status['hit'] = True
+        pochito.status['super'] = False
         pochito.check_attak = True
         pochito.status['move_x'] = -1
         pochito.direction = "left"
@@ -152,6 +159,7 @@ def controll(pygame, screen, pochito):
     # Simple Hit + Move Right
     elif keys[pygame.K_LEFT] == True and keys[pygame.K_d] == True:
         pochito.status['hit'] = True
+        pochito.status['super'] = False
         pochito.check_attak = True
         pochito.status['move_x'] = 1
         pochito.direction = "right"
@@ -160,6 +168,7 @@ def controll(pygame, screen, pochito):
     # Simple Hit (Простой удар)
     elif keys[pygame.K_LEFT]:
         pochito.status['hit'] = True
+        pochito.status['super'] = False
         pochito.check_attak = True
         pochito.status['move_x'] = 0
         pochito.status['move_y'] = 0
@@ -173,21 +182,26 @@ def controll(pygame, screen, pochito):
     # Super Hit
     if keys[pygame.K_UP]:
         if not keys[pygame.K_LEFT]:
-            pochito.status['super'] = True
-            pochito.status['hit'] = False
-            pochito.check_attak = True
+            if int(pochito.energy) > 0:
+                pochito.status['super'] = True
+                pochito.status['hit'] = False
+                pochito.check_attak = True
+                pochito.energy -= 0.2
 
-            if pochito.direction == "right":
-                pochito.status['move_x'] = 5
+                if pochito.direction == "right":
+                    pochito.status['move_x'] = 5
+                else:
+                    pochito.status['move_x'] = -5
+
+                pochito.status['move_y'] = 0
+
             else:
-                pochito.status['move_x'] = -5
+                pochito.status['super'] = False
+                pochito.check_attak = False
+                pochito.status['move_x'] = 0
+                pochito.status['move_y'] = 0
 
-            pochito.status['move_y'] = 0
-
-            return
-    else:
-        pochito.status['super'] = False
-        pochito.check_attak = False
+        return
 
     # Move Top + Move Right
     if keys[pygame.K_w] == True and keys[pygame.K_d]:

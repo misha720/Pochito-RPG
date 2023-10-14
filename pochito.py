@@ -55,6 +55,7 @@ class Pochito(pygame.sprite.Sprite):
 
         # Переменные персонажа
         self.health = 100  # Здоровье
+        self.energy = 100 # Энергия
         self.attak_hit = 0.5  # Сила
         self.attak_super_hit = 3  # Сила
         self.speed = 1  # Скорость
@@ -93,7 +94,12 @@ class Pochito(pygame.sprite.Sprite):
 
     def update(self, FPS):
         if self.is_alive():
-            self.speed = FPS // 20
+
+            # Correted Speed
+            if self.status['super']:
+                self.speed = FPS // 25
+            else:
+                self.speed = FPS // 15
 
             # Движение
             if self.rect.bottom < self.screen_rect.bottom: # Барьер снизу

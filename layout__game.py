@@ -48,8 +48,11 @@ def View(pygame, screen, config):
                 game = False
                 pygame.quit()
 
-        ctrl.controll(pygame, screen, pochito)
+        ctrl.controll(pygame, screen, config, pochito)
+        if config["work_scene"] == "menu":
+            game = False
         ctrl.updates(pygame, screen, config, FPS, pochito, zombies, ui_ctrl, zombie_demon, zombie_demon_weapon)
         zombies.update(FPS, [pochito.x, pochito.y], pochito.check_attak, [pochito.rect.width,pochito.rect.height])
 
+    return config
             
