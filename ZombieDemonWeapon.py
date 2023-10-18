@@ -53,17 +53,30 @@ class ZombieDemonWeapon(pygame.sprite.Sprite):
         self.is_used_weapon = False
         self.time_last_shot = 0 # Время последнего выстрела
         self.zombie_demon_rect: any
+        self.pochito_pos = []
 
         self.point_attak = 0 # Градус что бы достич почито лучом ZD
         self.index_for_list_agree = 0 # Индекс в списке
         self.takt = 0
+
+        # Line
+        self.line_start_pos = []
+        self.line_end_pos = []
+        self.line_size = []
         
 
     def drawing(self):
         # Draw Weapon
         if self.is_used_weapon:
+            # pygame.draw.line(self.screen,
+            #     (255,0,0,255),
+            #     self.line_start_pos,
+            #     self.line_end_pos,
+            # ) Включи для теста луча который на самом деле касается почито
+
             self.screen.blit(self.weapon_image, 
                 self.weapon_pos)
+
 
     def update(self, ZombieDemon):
         self.is_used_weapon = ZombieDemon.is_used_weapon
@@ -82,6 +95,8 @@ class ZombieDemonWeapon(pygame.sprite.Sprite):
 
             self.weapon_size = [self.weapon_image.get_rect().width,
                 self.weapon_image.get_rect().height]
+            self.line_size = [self.weapon_image.get_rect().width,
+                self.weapon_image.get_rect().height]
 
             if self.point_attak > 360:
                 self.point_attak // 360
@@ -90,23 +105,33 @@ class ZombieDemonWeapon(pygame.sprite.Sprite):
                 # top-right
                 self.weapon_pos[1] -= self.weapon_size[1]
 
+                self.line_start_pos = [self.weapon_pos[0], self.weapon_pos[1] + self.weapon_size[1]]
+                self.line_end_pos = [self.weapon_pos[0] + self.weapon_size[0], self.weapon_pos[1]]
+
             elif 90 < self.point_attak < 180:
                 # left-top
                 self.weapon_pos[0] -= self.weapon_size[0]
                 self.weapon_pos[1] -= self.weapon_size[1]
+
+                self.line_start_pos = [self.weapon_pos[0] + self.weapon_size[0], self.weapon_pos[1] + self.weapon_size[1]]
+                self.line_end_pos = [self.weapon_pos[0], self.weapon_pos[1]]
                 
             elif 180 < self.point_attak < 270:
                 # bottom-left
                 self.weapon_pos[0] -= self.weapon_size[0]
+
+                self.line_start_pos = [self.weapon_pos[0] + self.weapon_size[0], self.weapon_pos[1]]
+                self.line_end_pos = [self.weapon_pos[0], self.weapon_pos[1] + self.weapon_size[1]]
                 
             elif 270 < self.point_attak < 360:
                 # right-bottom
-                ...
+                self.line_start_pos = [self.weapon_pos[0], self.weapon_pos[1]]
+                self.line_end_pos = [self.weapon_pos[0] + self.weapon_size[0], self.weapon_pos[1] + self.weapon_size[1]]
             
             self.weapon_rect.x = self.weapon_pos[0]
             self.weapon_rect.y = self.weapon_pos[1]
             self.weapon_rect.width = self.weapon_size[0]
-            self.weapon_rect.height = self.weapon_size[0]
+            self.weapon_rect.height = self.weapon_size[1]
 
             if self.count_frame_weapon < len(self.weapon_frames) - 1:
                 self.delay_weapon += 1
@@ -122,6 +147,7 @@ class ZombieDemonWeapon(pygame.sprite.Sprite):
                 ZombieDemon.positions_pochito.clear()
                 self.is_used_weapon = False
                 ZombieDemon.is_used_weapon = False
+                
 
             
 

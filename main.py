@@ -1,5 +1,5 @@
 """
-	Pochito RPG
+    Pochito RPG
 """
 
 # Import
@@ -25,7 +25,7 @@ def main():
 
     while True:
         if config['work_scene'] == "menu":
-        	config = Menu.View(pygame, screen, config)
+            config = Menu.View(pygame, screen, config)
 
         if config['work_scene'] == "arcade":
             config = Game.View(pygame, screen, config)

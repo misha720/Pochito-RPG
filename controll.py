@@ -12,6 +12,9 @@ def updates(pygame, screen, config, FPS, pochito, zombies, ui, zombie_demon, zom
         # Alive         
 
         ui.drawing()
+        pochito.update(FPS)
+        zombie_demon.update(FPS, [pochito.x + pochito.rect.width // 2, pochito.y + pochito.rect.height // 2])
+        zombie_demon_weapon.update(zombie_demon)
         
         # Round Update
         if ui.round_game != ui.minute_since_past_round:
@@ -19,7 +22,7 @@ def updates(pygame, screen, config, FPS, pochito, zombies, ui, zombie_demon, zom
             create_zombie(screen, zombies, 5)
 
         # Called Boss
-        if ui.round_game == 3 and zombie_demon.called == False:
+        if ui.round_game == 0 and zombie_demon.called == False:
             # Даём сигнал
             signal_to_boss = pygame.mixer.Sound("sound/signal_boss.wav")
             signal_to_boss.set_volume(config["settings"]["sound_volume"])
@@ -48,15 +51,14 @@ def updates(pygame, screen, config, FPS, pochito, zombies, ui, zombie_demon, zom
                     if pochito.status['super']:
                         zombie_demon.health -= pochito.attak_super_hit
 
-            if pochito.rect.colliderect(zombie_demon_weapon.weapon_rect):
-                if zombie_demon.is_used_weapon == True:
+            if zombie_demon.is_used_weapon == True:
+                if pochito.rect.clipline(zombie_demon_weapon.line_start_pos, zombie_demon_weapon.line_end_pos):
+                    
                     pochito.health -= zombie_demon.attak
                     ui.shake_screen()
 
 
-        pochito.update(FPS)
-        zombie_demon.update(FPS, [pochito.x + pochito.rect.width // 2, pochito.y + pochito.rect.height // 2])
-        zombie_demon_weapon.update(zombie_demon)
+        
 
         # GAME
 
