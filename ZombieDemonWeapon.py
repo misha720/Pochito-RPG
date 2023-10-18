@@ -1,6 +1,7 @@
 import pygame
 import random
 from math import atan2, degrees, pi
+import time
 
 class ZombieDemonWeapon(pygame.sprite.Sprite):
     """
@@ -42,6 +43,11 @@ class ZombieDemonWeapon(pygame.sprite.Sprite):
                 (self.screen_width, self.screen_width // 100 * 2))
         ]
 
+        # Animator
+        self.animator_worker = False
+        self.time_start_animation = 0 #Время начала анимации
+        self.speed_animation = 200 # Время в секундах
+
         self.delay_weapon = 0 # Сколько приходиться кадров на один фрейм
         self.count_frame_weapon = 0
 
@@ -64,6 +70,7 @@ class ZombieDemonWeapon(pygame.sprite.Sprite):
         self.line_end_pos = []
         self.line_size = []
         
+        
 
     def drawing(self):
         # Draw Weapon
@@ -80,6 +87,8 @@ class ZombieDemonWeapon(pygame.sprite.Sprite):
 
     def update(self, ZombieDemon):
         self.is_used_weapon = ZombieDemon.is_used_weapon
+        
+
         self.zombie_demon_rect = ZombieDemon.rect
         self.weapon_pos = [ZombieDemon.x + self.zombie_demon_rect.width // 2,
         ZombieDemon.y + self.zombie_demon_rect.height // 2]
@@ -133,13 +142,12 @@ class ZombieDemonWeapon(pygame.sprite.Sprite):
             self.weapon_rect.width = self.weapon_size[0]
             self.weapon_rect.height = self.weapon_size[1]
 
-            if self.count_frame_weapon < len(self.weapon_frames) - 1:
-                self.delay_weapon += 1
-                if self.delay_weapon > 5:
-                    self.count_frame_weapon += 1
-                    self.delay_weapon = 0
+            if self.animator():
+                ...
             else:
+
                 # Останавливаем атаку по её завершению
+                self.animator_worker = False
                 self.count_frame_weapon = 0
                 ZombieDemon.count_frame_attak = 0
                 ZombieDemon.status = 'move'
@@ -166,3 +174,16 @@ class ZombieDemonWeapon(pygame.sprite.Sprite):
         rads = atan2(-dy,dx)
         rads %= 2*pi
         return float(degrees(rads))
+
+    def animator(self):
+        if self.animator_worker == False:
+            self.animator_worker = True
+            self.time_start_animation = time.time()
+
+        if self.count_frame_weapon < len(self.weapon_frames) - 1:
+            past_time = (time.time() - self.time_start_animation) * 1000
+            self.count_frame_weapon = int(past_time // self.speed_animation)
+
+            return True
+        else:
+            return False

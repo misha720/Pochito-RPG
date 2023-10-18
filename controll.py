@@ -22,7 +22,7 @@ def updates(pygame, screen, config, FPS, pochito, zombies, ui, zombie_demon, zom
             create_zombie(screen, zombies, 5)
 
         # Called Boss
-        if ui.round_game == 0 and zombie_demon.called == False:
+        if ui.round_game == 3 and zombie_demon.called == False:
             # Даём сигнал
             signal_to_boss = pygame.mixer.Sound("sound/signal_boss.wav")
             signal_to_boss.set_volume(config["settings"]["sound_volume"])
